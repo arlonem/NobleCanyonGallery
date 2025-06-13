@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Noble Canyon Gallery</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/gallery-plugin/index.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.css"/>
+  <style>
+    #viewer {width:100vw;height:100vh;position:relative}
+    .modal {display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.85);border-radius:8px;overflow:hidden;z-index:1000}
+    #pointCloudModal {width:80vw;height:90vh;border:2px solid #444}
+    .modal iframe {width:100%;height:100%;border:none;box-sizing:border-box}
+    .close-btn {position:absolute;top:8px;right:8px;padding:.3em .6em;background:#dadada;color:#504f4f;border:none;border-radius:4px;cursor:pointer;z-index:1100}
+    .close-btn:hover {background:#474747;color:#e2e1e1}
+  </style>
+</head>
+<body>
+  <div id="viewer">
+    <div id="pointCloudModal" class="modal">
+      <button id="closePotree" class="close-btn">✕</button>
+      <iframe id="pointCloudFrame"></iframe>
+    </div>
+  </div>
+
+  <script type="importmap">
+  { "imports": {
+      "three":"https://cdn.jsdelivr.net/npm/three/build/three.module.js",
+      "@photo-sphere-viewer/core":"https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.module.js",
+      "@photo-sphere-viewer/gallery-plugin":"https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/gallery-plugin/index.module.js",
+      "@photo-sphere-viewer/markers-plugin":"https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.module.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import { Viewer } from '@photo-sphere-viewer/core';
+    import { GalleryPlugin } from '@photo-sphere-viewer/gallery-plugin';
+    import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
+
+    const panoramaBase  = './content/panoramas/';
+    const thumbnailBase = './content/thumbnails/';
+    const photoBase     = './content/photos/';
+    const iconBase      = './content/icons/';
+
+    const items = [
+      { id:'2021P70', panorama:panoramaBase+'2021P70.jpg', thumbnail:thumbnailBase+'2021P70_thumb.jpg', name:'2021 - P70', caption:'2021 - P70' },
+      { id:'2021P71', panorama:panoramaBase+'2021P71.jpg', thumbnail:thumbnailBase+'2021P71_thumb.jpg', name:'2021 - P71', caption:'2021 - P71' },
+      { id:'2021P72', panorama:panoramaBase+'2021P72.jpg', thumbnail:thumbnailBase+'2021P72_thumb.jpg', name:'2021 - P72', caption:'2021 - P72' },
+      { id:'2021P73', panorama:panoramaBase+'2021P73.jpg', thumbnail:thumbnailBase+'2021P73_thumb.jpg', name:'2021 - P73', caption:'2021 - P73' },
+      { id:'2021P74', panorama:panoramaBase+'2021P74.jpg', thumbnail:thumbnailBase+'2021P74_thumb.jpg', name:'2021 - P74', caption:'2021 - P74' },
+      { id:'2021P75', panorama:panoramaBase+'2021P75.jpg', thumbnail:thumbnailBase+'2021P75_thumb.jpg', name:'2021 - P75', caption:'2021 - P75' },
+      { id:'2021P76', panorama:panoramaBase+'2021P76.jpg', thumbnail:thumbnailBase+'2021P76_thumb.jpg', name:'2021 - P76', caption:'2021 - P76' },
+      { id:'2021P77', panorama:panoramaBase+'2021P77.jpg', thumbnail:thumbnailBase+'2021P77_thumb.jpg', name:'2021 - P77', caption:'2021 - P77' },
+      { id:'2021P78', panorama:panoramaBase+'2021P78.jpg', thumbnail:thumbnailBase+'2021P78_thumb.jpg', name:'2021 - P78', caption:'2021 - P78' },
+      { id:'2021P79', panorama:panoramaBase+'2021P79.jpg', thumbnail:thumbnailBase+'2021P79_thumb.jpg', name:'2021 - P79', caption:'2021 - P79' },
+      { id:'2021P80', panorama:panoramaBase+'2021P80.jpg', thumbnail:thumbnailBase+'2021P80_thumb.jpg', name:'2021 - P80', caption:'2021 - P80' },
+      { id:'2021P81', panorama:panoramaBase+'2021P81.jpg', thumbnail:thumbnailBase+'2021P81_thumb.jpg', name:'2021 - P81', caption:'2021 - P81' },
+      { id:'2022P01', panorama:panoramaBase+'2022P01.jpg', thumbnail:thumbnailBase+'2022P01_thumb.jpg', name:'2022 - P01', caption:'2022 - P01' },
+      { id:'2022P02', panorama:panoramaBase+'2022P02.jpg', thumbnail:thumbnailBase+'2022P02_thumb.jpg', name:'2022 - P02', caption:'2022 - P02' },
+      { id:'2022P03', panorama:panoramaBase+'2022P03.jpg', thumbnail:thumbnailBase+'2022P03_thumb.jpg', name:'2022 - P03', caption:'2022 - P03' },
+      { id:'2022P04', panorama:panoramaBase+'2022P04.jpg', thumbnail:thumbnailBase+'2022P04_thumb.jpg', name:'2022 - P04', caption:'2022 - P04' },
+      { id:'2022P05', panorama:panoramaBase+'2022P05.jpg', thumbnail:thumbnailBase+'2022P05_thumb.jpg', name:'2022 - P05', caption:'2022 - P05' },
+    ];
+
+    const markersMap = {
+      '2021P70': [{
+        id:'pc', position:{yaw:0.5,pitch:0.1},
+        image: iconBase+'Marker_Icon.png', size:{width:55,height:55},
+        tooltip:'View 2021 point cloud',
+        data:{ pointCloudUrl:'https://arlonem.github.io/2021P70-Potree/' }
+      }],
+      '2022P01': [{
+        id:'photo', position:{yaw:5.647,pitch:-0.693},
+        image: iconBase+'Camera_Icon.png', size:{width:55,height:55},
+        tooltip:'Show 2022 Field Photo',
+        content: `
+          <h1>2022 Field Photo</h1>
+          <p>Overview of the study area in 2022 P01.</p>
+          <img
+            src="${photoBase}DSC_P01.jpg"
+            style="width:100%;border:2px solid #fff;border-radius:8px"
+            alt="Field photo 2022 P01"
+          />
+        `
+      }]
+    };
+
+    const viewer = new Viewer({
+      container:'viewer',
+      panorama:items[0].panorama,
+      caption: 'Noble Canyon',
+      plugins: [
+        [ GalleryPlugin, { visibleOnLoad: true, thumbnailSize: { width:100, height:100 } } ],
+        [ MarkersPlugin, { markers:[] } ]
+      ]
+    });
+
+    const gallery = viewer.getPlugin(GalleryPlugin);
+    const mp = viewer.getPlugin(MarkersPlugin);
+
+    gallery.setItems(items, id => {
+      const it = items.find(i=>i.id===id);
+      viewer.setPanorama(it.panorama).then(()=>{
+        mp.clearMarkers();
+        (markersMap[id]||[]).forEach(m=>mp.addMarker(m));
+      });
+    });
+
+    viewer.addEventListener('ready',()=> {
+      (markersMap[items[0].id]||[]).forEach(m=>mp.addMarker(m));
+    });
+
+    mp.addEventListener('select-marker',({marker})=>{
+      if(marker.data?.pointCloudUrl){
+        document.getElementById('pointCloudFrame').src = marker.data.pointCloudUrl;
+        document.getElementById('pointCloudModal').style.display = 'block';
+      }
+    });
+
+    document.getElementById('closePotree').onclick = ()=>{
+      document.getElementById('pointCloudModal').style.display='none';
+      document.getElementById('pointCloudFrame').src='';
+    };
+  </script>
+</body>
+</html>
